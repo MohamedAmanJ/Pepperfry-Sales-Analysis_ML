@@ -1,0 +1,15 @@
+{
+  version 2,
+  builds [
+    {
+      src apiindex.py,
+      use @vercelpython
+    }
+  ],
+  routes [
+    {
+      src (.),
+      dest apiindex.py
+    }
+  ]
+}
