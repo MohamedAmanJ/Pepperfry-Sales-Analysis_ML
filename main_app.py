@@ -1,33 +1,41 @@
 from flask import Flask, request, jsonify
 import pandas as pd
 import joblib
+import os
 
 app = Flask(__name__)
 
-# Load Pipeline
-model = joblib.load("pepperfry_pipeline.pkl")
+# Load model
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "pepperfry_pipeline.pkl")
+
+model = joblib.load(MODEL_PATH)
 
 
 @app.route("/")
 def home():
-    return "Pepperfry Price Prediction API"
+    return jsonify({
+        "message": "Pepperfry Price Prediction API is Running 🚀"
+    })
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    try:
+        data = request.get_json()
 
-    data = request.get_json()
+        if not data:
+            return jsonify({"error": "No input data provided"}), 400
 
-    # Create DataFrame
-    input_df = pd.DataFrame([data])
+        input_df = pd.DataFrame([data])
 
-    # Prediction
-    prediction = model.predict(input_df)
+        prediction = model.predict(input_df)
 
-    return jsonify({
-        "Predicted Price": round(float(prediction[0]), 2)
-    })
+        return jsonify({
+            "Predicted Price": round(float(prediction[0]), 2)
+        })
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
